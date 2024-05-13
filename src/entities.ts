@@ -168,3 +168,33 @@ export function setControls(k: KaboomCtx, player: PlayerGameObj) {
     }
   });
 }
+
+export const makeFlameEnemy = (k: KaboomCtx, posX: number, posY: number) => {
+  const flame = k.add([
+    k.sprite('assets', { anim: 'flame' }),
+    k.pos(posX * scale, posY * scale),
+    k.scale(scale),
+    k.area({ shape: new k.Rect(k.vec2(4, 6), 8, 10), collisionIgnore: ['enemy'] }),
+    k.body(),
+    // IA State
+    k.state('idle', ['idle', 'jump']),
+    'enemy',
+  ]);
+
+  flame.onStateEnter('idle', async () => {
+    await k.wait(1);
+    flame.enterState('jump');
+  });
+
+  flame.onStateEnter('jump', () => {
+    flame.jump(1000);
+  });
+
+  flame.onStateUpdate('jump', () => {
+    if (flame.isGrounded()) {
+      flame.enterState('idle');
+    }
+  });
+
+  return flame;
+};
