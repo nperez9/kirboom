@@ -27,7 +27,7 @@ export async function makeMap(k: KaboomCtx, name: string): Promise<{ map: any; s
       }
     }
 
-    if (layer.name === 'spawn-points') {
+    if (layer.name === 'spawnpoints') {
       for (const { name, x, y } of layer.objects) {
         if (!spawnPoints[name]) {
           spawnPoints[name] = [];

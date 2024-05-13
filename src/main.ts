@@ -1,4 +1,5 @@
 import { gravity } from './constants';
+import { makePlayer } from './entities';
 import { k } from './kaboomCtx';
 import { makeMap } from './utils';
 
@@ -29,6 +30,18 @@ async function gameSetup() {
     // bg, cool stuff
     k.add([k.rect(k.width(), k.height()), k.color(k.Color.fromHex('#F7D7DB')), k.fixed()]);
     k.add(level1Map);
+
+    const korbo = makePlayer(k, level1SpawnPoints.player[0].x, level1SpawnPoints.player[0].y);
+    k.add(korbo);
+
+    // Camera Stuff
+    k.camScale(0.7, 0.7);
+    k.onUpdate(() => {
+      // 432 should be the level limit
+      if (korbo.pos.x < level1Map.pos.x + 432) {
+        k.camPos(korbo.pos.x + 500, 800);
+      }
+    });
   });
 
   k.go('level-1');
