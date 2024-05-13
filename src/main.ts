@@ -1,8 +1,9 @@
 import { gravity } from './constants';
-import { makePlayer } from './entities';
+import { makePlayer, setControls } from './entities';
 import { k } from './kaboomCtx';
 import { makeMap } from './utils';
 
+// Press F1 to see colitions
 async function gameSetup() {
   k.loadSprite('assets', './kirby-like.png', {
     sliceY: 10,
@@ -32,14 +33,14 @@ async function gameSetup() {
     k.add(level1Map);
 
     const korbo = makePlayer(k, level1SpawnPoints.player[0].x, level1SpawnPoints.player[0].y);
+    setControls(k, korbo);
     k.add(korbo);
-
     // Camera Stuff
     k.camScale(0.7, 0.7);
     k.onUpdate(() => {
       // 432 should be the level limit
       if (korbo.pos.x < level1Map.pos.x + 432) {
-        k.camPos(korbo.pos.x + 500, 800);
+        k.camPos(korbo.pos.x + 500, 850);
       }
     });
   });

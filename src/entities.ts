@@ -1,8 +1,33 @@
-import { KaboomCtx } from 'kaboom';
+import {
+  AreaComp,
+  DoubleJumpComp,
+  GameObj,
+  HealthComp,
+  KaboomCtx,
+  OpacityComp,
+  PosComp,
+  ScaleComp,
+  SpriteComp,
+} from 'kaboom';
 
 import { scale, deathOfY } from './constants';
 
-export function makePlayer(k: KaboomCtx, posX: number, posY: number) {
+export type PlayerGameObj = GameObj<
+  SpriteComp &
+    AreaComp &
+    PosComp &
+    ScaleComp &
+    DoubleJumpComp &
+    HealthComp &
+    OpacityComp & {
+      speed: number;
+      direction: 'left' | 'right';
+      isInhaling: boolean;
+      isFull: boolean;
+    }
+>;
+
+export function makePlayer(k: KaboomCtx, posX: number, posY: number): PlayerGameObj {
   const player = k.make([
     k.sprite('assets', { anim: 'kirbIdle' }),
     k.area({ shape: new k.Rect(k.vec2(4, 5.9), 8, 10) }),
@@ -12,6 +37,7 @@ export function makePlayer(k: KaboomCtx, posX: number, posY: number) {
     k.doubleJump(10),
     k.health(3),
     k.opacity(1),
+    k.scale(scale),
     // Custom that we will need
     {
       speed: 300,
@@ -76,4 +102,69 @@ export function makePlayer(k: KaboomCtx, posX: number, posY: number) {
   });
 
   return player;
+}
+
+export function setControls(k: KaboomCtx, player: PlayerGameObj) {
+  const inhaleEffect = k.get('inhaleEffect')[0];
+  const jumpButtons = ['up', 'z'];
+
+  k.onKeyDown((key) => {
+    switch (key) {
+      case 'left':
+        player.direction = 'left';
+        player.flipX = true;
+        player.move(-player.speed, 0);
+        break;
+      case 'right':
+        player.direction = 'right';
+        player.flipX = false;
+        player.move(player.speed, 0);
+        break;
+      case 'x':
+      case 'space':
+        if (player.isFull) {
+          player.play('kirbFull');
+          inhaleEffect.opacity = 0;
+          break;
+        }
+
+        player.isInhaling = true;
+        player.play('kirbInhale');
+        inhaleEffect.opacity = 1;
+        break;
+    }
+  });
+
+  k.onKeyPress((key) => {
+    if (jumpButtons.includes(key)) {
+      player.doubleJump();
+    }
+  });
+
+  k.onKeyRelease((key) => {
+    if (key === 'x' || key === 'space') {
+      if (player.isFull) {
+        player.isFull = false;
+        player.play('kirbInhaling');
+        // Todo: refactor this in a different function
+        const shootingStar = k.add([
+          k.sprite('assets', { anim: 'shootingStar', flipX: player.direction === 'right' }),
+          k.area({ shape: new k.Rect(k.vec2(5, 4), 6, 6) }),
+          k.pos(player.direction === 'right' ? player.pos.x + 80 : player.pos.x - 80, player.pos.y + 5),
+          k.scale(scale),
+          player.direction === 'right' ? k.move(k.RIGHT, 800) : k.move(k.LEFT, 800),
+          'shootingStar',
+        ]);
+        shootingStar.onCollide('platform', () => k.destroy(shootingStar));
+
+        player.isFull = false;
+        k.wait(1, () => player.play('kirbIdle'));
+        return;
+      }
+
+      inhaleEffect.opacity = 0;
+      player.isInhaling = false;
+      player.play('kirbIdle');
+    }
+  });
 }
