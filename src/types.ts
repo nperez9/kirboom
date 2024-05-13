@@ -1,3 +1,5 @@
+import { AreaComp, DoubleJumpComp, GameObj, HealthComp, OpacityComp, PosComp, ScaleComp, SpriteComp } from 'kaboom';
+
 export interface SpawnPoints {
   [key: string]: { x: number; y: number }[];
 }
@@ -32,3 +34,18 @@ export interface Level {
   infinite: boolean;
   layers: Layer[];
 }
+
+export type PlayerGameObj = GameObj<
+  SpriteComp &
+    AreaComp &
+    PosComp &
+    ScaleComp &
+    DoubleJumpComp &
+    HealthComp &
+    OpacityComp & {
+      speed: number;
+      direction: 'left' | 'right';
+      isInhaling: boolean;
+      isFull: boolean;
+    }
+>;

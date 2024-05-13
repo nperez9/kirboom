@@ -1,31 +1,7 @@
-import {
-  AreaComp,
-  DoubleJumpComp,
-  GameObj,
-  HealthComp,
-  KaboomCtx,
-  OpacityComp,
-  PosComp,
-  ScaleComp,
-  SpriteComp,
-} from 'kaboom';
+import { KaboomCtx } from 'kaboom';
 
 import { scale, deathOfY } from './constants';
-
-export type PlayerGameObj = GameObj<
-  SpriteComp &
-    AreaComp &
-    PosComp &
-    ScaleComp &
-    DoubleJumpComp &
-    HealthComp &
-    OpacityComp & {
-      speed: number;
-      direction: 'left' | 'right';
-      isInhaling: boolean;
-      isFull: boolean;
-    }
->;
+import { PlayerGameObj } from './types';
 
 export function makePlayer(k: KaboomCtx, posX: number, posY: number): PlayerGameObj {
   const player = k.make([
@@ -81,7 +57,7 @@ export function makePlayer(k: KaboomCtx, posX: number, posY: number): PlayerGame
   ]);
 
   // this is a child of the player
-  const inhaleZone = player.add([k.area({ shape: new k.Rect(k.vec2(0), 20, 40) }), k.pos(), 'inhaleZone']);
+  const inhaleZone = player.add([k.area({ shape: new k.Rect(k.vec2(0, -1), 20, 8) }), k.pos(), 'inhaleZone']);
   inhaleZone.onUpdate(() => {
     if (player.direction === 'left') {
       inhaleZone.pos = k.vec2(-14, 8);
@@ -101,7 +77,7 @@ export function makePlayer(k: KaboomCtx, posX: number, posY: number): PlayerGame
     }
   });
 
-  return player;
+  return player as PlayerGameObj;
 }
 
 export function setControls(k: KaboomCtx, player: PlayerGameObj) {
